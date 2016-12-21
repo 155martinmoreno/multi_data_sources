@@ -1,0 +1,38 @@
+{
+  "name": "some_name",
+  "version": "0.0.1",
+  "description": "",
+  "main": "build/app/index.js",
+  "scripts": {
+    "postinstall": "cd src && typings install",
+    "prebuild": "rimraf build",
+    "build": "tsc -p src/ || true",
+    "test": "npm run build && mocha build/test $NODE_DEBUG_OPTION --require source-map-support/register || true",
+    "clean": "rimraf build"
+  },
+  "keywords": [
+    "vscode",
+    "typescript",
+    "example",
+    "boilerplate",
+    "project",
+    "skeleton",
+    "debug",
+    "intellisense",
+    "compile",
+    "transpile"
+  ],
+  "devDependencies": {
+    "@types/chai": "^3.4.34",
+    "@types/sinon": "^1.16.33",
+    "chai": "^3.5.0",
+    "mocha": "^2.5.3",
+    "rimraf": "^2.5.2",
+    "sinon": "^1.17.4",
+    "typescript": "2.1.4",
+    "typings": "^1.0.4"
+  },
+  "dependencies": {
+    "source-map-support": "^0.4.0"
+  }
+}

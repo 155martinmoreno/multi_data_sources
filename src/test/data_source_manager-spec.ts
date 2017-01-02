@@ -8,8 +8,8 @@ import * as Collections from "typescript-collections";
 class DummySource implements DataSource {
     private values: Collections.Dictionary<String, any> = new Collections.Dictionary<String, any>();
 
-    getData(key: string, callback: Function): any {
-        callback(this.values.getValue(key));
+    getData(key: string, callback: DataSourceCallback): any {
+        callback.onData(this.values.getValue(key));
     }
 
     putData(key: string, value: any): void {
@@ -30,8 +30,8 @@ describe("DataSourceManager", function () {
         const dummySource = new DummySource();
         const dummyListener = new DummyListener();
 
-        sinon.stub(dummySource, "getData", function (key: string, callback: Function) {
-            return callback(dummy_data);
+        sinon.stub(dummySource, "getData", function (key: string, callback: DataSourceCallback) {
+            return callback.onData(dummy_data);
         });
 
         sinon.stub(dummyListener, "onData", function (data: any) {
@@ -51,15 +51,15 @@ describe("DataSourceManager", function () {
         const throwSource = new DummySource();
         const dummyListener = new DummyListener();
 
-        sinon.stub(emptySource, "getData", function (key: string, callback: Function) {
-            return callback(null);
+        sinon.stub(emptySource, "getData", function (key: string, callback: DataSourceCallback) {
+            return callback.onData(null);
         });
 
-        sinon.stub(dummySource, "getData", function (key: string, callback: Function) {
-            return callback(dummy_data);
+        sinon.stub(dummySource, "getData", function (key: string, callback: DataSourceCallback) {
+            return callback.onData(dummy_data);
         });
 
-        sinon.stub(throwSource, "getData", function (key: string, callback: Function) {
+        sinon.stub(throwSource, "getData", function (key: string, callback: DataSourceCallback) {
             throw new Error("Shouldn't be calling this");
         });
 
@@ -82,24 +82,28 @@ describe("DataSourceManager", function () {
         const destinationSource3 = new DummySource();
         const dummyListener = new DummyListener();
 
-        sinon.stub(dummySource, "getData", function (key: string, callback: Function) {
-            return callback(dummy_data);
+        sinon.stub(dummySource, "getData", function (key: string, callback: DataSourceCallback) {
+            return callback.onData(dummy_data);
         });
 
         sinon.stub(dummyListener, "onData", function (data: any) {
-            let callback = (data: any) => {
-                expect(data).to.equal(dummy_data);
+            let callCount = 0;
 
-                if (spy.callCount === 4) {
-                    done();
+            let callback = {
+                onData(data: any) {
+                    expect(data).to.equal(dummy_data);
+                    callCount++;
+
+                    if (callCount === 4) {
+                        done();
+                    }
                 }
             };
 
-            let spy = sinon.spy(callback);
-            destinationSource0.getData(key, spy);
-            destinationSource1.getData(key, spy);
-            destinationSource2.getData(key, spy);
-            destinationSource3.getData(key, spy);
+            destinationSource0.getData(key, callback);
+            destinationSource1.getData(key, callback);
+            destinationSource2.getData(key, callback);
+            destinationSource3.getData(key, callback);
         });
 
         let manager: DataSourceManager = new DataSourceManager(destinationSource0, destinationSource1, destinationSource2, destinationSource3, dummySource);

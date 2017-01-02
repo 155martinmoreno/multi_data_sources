@@ -21,18 +21,22 @@ export class DataSourceManager {
 
     private internal_get_data(index: number, key: string, callback: DataSourceCallback, accumulated: Array<DataSource>): void {
         let dataSource = this.dataSources[index];
+        let self = this;
 
-        dataSource.getData(key, (data: any) => {
-            if (!!data) {
-                accumulated.forEach((source: DataSource, index: number, array: DataSource[]) => {
-                    source.putData(key, data);
-                });
-                callback.onData(data);
-            } else {
-                accumulated.push(dataSource);
-                index++;
-                this.internal_get_data(index, key, callback, accumulated);
-            }
-        });
+        dataSource.getData(key,
+            {
+                onData(data: any) {
+                    if (!!data) {
+                        accumulated.forEach((source: DataSource, index: number, array: DataSource[]) => {
+                            source.putData(key, data);
+                        });
+                        callback.onData(data);
+                    } else {
+                        accumulated.push(dataSource);
+                        index++;
+                        self.internal_get_data(index, key, callback, accumulated);
+                    }
+                }
+            });
     }
 }
